@@ -1,2 +1,11 @@
 ---
-# vars file for hypriot-baseline
+# vars file for baseline
+baseline_packages:
+  - nfs-common
+  - nfs-server
+  - dphys-swapfile
+  - vim
+  - ntp
+  - heartbeat
+  - haproxy
+  - docker-ce=18.06.3~ce~3-0~raspbian

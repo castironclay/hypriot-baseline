@@ -1,2 +1,64 @@
 ---
-# tasks file for hypriot-baseline
+# tasks file for baseline
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    update_cache: yes
+
+- name: Check Docker apt-mark hold
+  command: apt-mark showhold -v
+  register: docker_hold
+
+- name: Hold Docker Version
+  become: true
+  command: aptitude hold docker-ce
+  when: '"docker-ce" not in docker_hold.stdout'
+
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+
+- name: Install Packages
+  become: true
+  apt:
+    name: "{{ item }}"
+  loop: "{{ baseline_packages }}"
+
+- name: Disable Swap_1
+  become: true
+  command: dphys-swapfile swapoff
+
+- name: Disable Swap_2
+  become: true
+  command: dphys-swapfile uninstall
+
+- name: Disable Swap_3
+  become: true
+  systemd:
+    name: dphys-swapfile
+    enabled: no
+
+- name: Set Authorized Keys
+  authorized_key:
+    user: "{{ item.user }}"
+    state: present
+    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+- name: Copy Cloud Host File
+  become: yes
+  template:
+    src: templates/hosts.debian.tmpl
+    dest: /etc/cloud/templates/hosts.debian.tmpl
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Set Hostnames
+  become: true
+  hostname: name={{ inventory_hostname }}
+
+- name: Reboot
+  become: true
+  reboot:
