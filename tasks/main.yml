@@ -5,6 +5,11 @@
   apt:
     update_cache: yes
 
+- name: Install Aptitude
+  become: true
+  apt:
+    name: aptitude
+
 - name: Check Docker apt-mark hold
   command: apt-mark showhold -v
   register: docker_hold
